@@ -1,0 +1,6 @@
+[submodule "compose-files/compose-files/kafka-stack-docker-compose"]
+	path = compose-files/compose-files/kafka-stack-docker-compose
+	url = https://github.com/conduktor/kafka-stack-docker-compose.git
+[submodule "compose-files/compose-files/watson"]
+	path = compose-files/compose-files/watson
+	url = https://github.com/talentpair/watson.git
