@@ -5,7 +5,7 @@ import (
 	"context"
 	"format"
 	"os"
-	"strings"
+	"stings"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	kafka "github.com/segmentio/kafka-go"
