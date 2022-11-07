@@ -6,7 +6,7 @@ import (
 
 // @@@SNIPSTART samples-go-child-workflow-example-child-workflow-definition
 // SampleChildWorkflow is a Workflow Definition
-func SampleChildWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 	greeting := "Hello " + name + "!"
 	logger.Info("Child workflow execution: " + greeting)

@@ -9,11 +9,11 @@ import (
 // This Workflow Definition demonstrates how to start a Child Workflow Execution from a Parent Workflow Execution.
 // Each Child Workflow Execution starts a new Run.
 // The Parent Workflow Execution is notified only after the completion of last Run of the Child Workflow Execution.
-func SampleParentWorkflow(ctx workflow.Context) (string, error) {
+func CreateJobPostingParentWorkflow(ctx workflow.Context) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
 	cwo := workflow.ChildWorkflowOptions{
-		WorkflowID: "ABC-SIMPLE-CHILD-WORKFLOW-ID",
+		WorkflowID: "CREATEJOBPOSTING-WORKFLOW-ID",
 	}
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
@@ -25,6 +25,7 @@ func SampleParentWorkflow(ctx workflow.Context) (string, error) {
 	}
 
 	logger.Info("Parent execution completed.", "Result", result)
+	// action to write to next topic
 	return result, nil
 }
 
