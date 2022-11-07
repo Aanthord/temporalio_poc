@@ -17,9 +17,13 @@ import (
         "go.opentelemetry.io/otel/sdk/resource"
         tracesdk "go.opentelemetry.io/otel/sdk/trace"
         semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+		"github.com/aanthord/temporalio_poc/watson/"
+		"github.com/aanthord/temporalio_poc/kafka/"
+
+		
 )
 const (
-	service     = "temporalio-KafkaReader"
+	service     = "temporalio-createwallet"
 	environment = "test"
 	id          = 1
 )
@@ -71,8 +75,8 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.SampleParentWorkflow)
-	w.RegisterWorkflow(child_workflow.SampleChildWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
@@ -96,7 +100,10 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
 		logger.Info("Getting user_id")
+		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
+		watsonpostcreatewallet(userid)
 		logger.Info("Writing message to next topic")
+		kafkaWriter(validateWallet, "userid", userid)
 	}
 }
