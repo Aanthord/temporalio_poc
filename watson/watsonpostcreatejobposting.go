@@ -13,7 +13,7 @@ type Post struct {
 	Userid string `json:"user_id"`
 }
 
-func watsonpostwalletcreate(nextUserId string) {
+func main(nextUserId string) {
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
@@ -36,5 +36,5 @@ func watsonpostwalletcreate(nextUserId string) {
 		return
 	}
 
-	log.Printf("Post added with ID %d", post.ID)
+	log.Printf("Post added")
 }
