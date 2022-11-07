@@ -1,23 +1,22 @@
 package kafkaReader
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"format"
-        "os"
-        "stings"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+
+	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 )
+
 const (
 	service     = "temporalio-KafkaReader"
 	environment = "test"
@@ -46,29 +45,6 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 		)),
 	)
 	return tp, nil
-}
-
-//get a list of all the topics
-func getKafkaTopics(kafkaURL) {
-	conn, err := kafka.Dial("tcp", kafkaURL)
-	if err != nil {
-    panic(err.Error())
-}
-	defer conn.Close()
-
-	partitions, err := conn.ReadPartitions()
-	if err != nil {
-    		panic(err.Error())
-}
-
-	m := map[string]struct{}{}
-
-	for _, p := range partitions {
-    	m[p.Topic] = struct{}{}
-}
-	for k := range m {
-    	fmt.Println(k)
-}
 }
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
@@ -101,21 +77,22 @@ func main() {
 	if err != nil {
 		log.Fatalln("Unable to start worker", err)
 
-	// get kafka reader using environment variables.
-	kafkaURL := os.Getenv("kafkaURL")
-	topic := os.Getenv("topic")
-	groupID := os.Getenv("groupID")
+		// get kafka reader using environment variables.
+		kafkaURL := os.Getenv("kafkaURL")
+		topic := os.Getenv("topic")
+		groupID := os.Getenv("groupID")
 
-	reader := getKafkaReader(kafkaURL, topic, groupID)
+		reader := getKafkaReader(kafkaURL, topic, groupID)
 
-	defer reader.Close()
+		defer reader.Close()
 
-	fmt.Println("start consuming ... !!")
-	for {
-		m, err := reader.ReadMessage(context.Background())
-		if err != nil {
-			log.Fatalln(err)
+		fmt.Println("start consuming ... !!")
+		for {
+			m, err := reader.ReadMessage(context.Background())
+			if err != nil {
+				log.Fatalln(err)
+			}
+			fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		}
-		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 	}
 }
