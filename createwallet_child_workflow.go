@@ -1,12 +1,13 @@
 package child_workflow
 
 import (
-	"go.temporal.io/sdk/workflow"
+		"go.temporal.io/sdk/workflow"
 	    "log"
 		"context"
     	"fmt"
         "os"
         "strings"
+		"json"
         "go.temporal.io/sdk/client"
         "go.temporal.io/sdk/worker"
         kafka "github.com/segmentio/kafka-go"
@@ -99,11 +100,17 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
+		var payload interface{} // The interface where we will save the converted JSON data.
+
+    	json.Unmarshal(m, &payload) // Convert JSON data into interface{} type
+    	m := payload.(map[string]interface{}) // To use the converted data we will need to convert it 
+                                          // into a map[string]interface{}
+
 		logger.Info("Getting user_id")
+		
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostcreatewallet(userid)
-		logger.Info("Writing message to next topic")
-		kafkaWriter(validateWallet, "userid", userid)
+		watsonpostcreatewallet(m.["userid"].(string))
+		
 	}
 }

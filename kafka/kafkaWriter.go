@@ -1,10 +1,7 @@
 package kafkaWriter
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
+	"context"
 	"os"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -45,47 +42,22 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 	return tp, nil
 }
 
-func producerHandler(kafkaWriter *kafka.Writer) func(http.ResponseWriter, *http.Request) {
-	return http.HandlerFunc(func(wrt http.ResponseWriter, req *http.Request) {
-		body, err := ioutil.ReadAll(req.Body)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		msg := kafka.Message{
-			Key:   []byte(fmt.Sprintf("address-%s", req.RemoteAddr)),
-			Value: body,
-		}
-		err = kafkaWriter.WriteMessages(req.Context(), msg)
-
-		if err != nil {
-			wrt.Write([]byte(err.Error()))
-			log.Fatalln(err)
-		}
-	})
-}
-
-func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
-	return &kafka.Writer{
-		Addr:         kafka.TCP(kafkaURL),
+func main(topic string, key1 string, val1 string) {
+	// get kafka writer using environment variables.
+	w := &kafka.Writer{
+		Addr:         kafka.TCP(os.Getenv("KafkaURL")),
 		Topic:        topic,
 		Balancer:     &kafka.LeastBytes{},
 		BatchSize:    os.Getenv("BatchSize"),
 		BatchTimeout: os.Getenv("BatchTimeoutMS"),
 	}
-}
 
-func main() {
-	// get kafka writer using environment variables.
-	kafkaURL := os.Getenv("kafkaURL")
-	topic := os.Getenv("topic")
-	kafkaWriter := getKafkaWriter(kafkaURL, topic)
+	w.WriteMessages(context.Background(),
+		kafka.Message{
+			Key:   []byte(key1),
+			Value: []byte(val1),
+		},
+	)
 
-	defer kafkaWriter.Close()
-
-	// Add handle func for producer.
-	http.HandleFunc("/write", producerHandler(kafkaWriter))
-
-	// Run the web server.
-	fmt.Println("start producer-api ... !!")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	w.Close()
 }

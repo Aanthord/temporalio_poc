@@ -1,4 +1,4 @@
-package watsonpostwalletcreate
+package watsonpostreatewallet
 
 import (
 	"encoding/json"
