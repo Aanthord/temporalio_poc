@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/worker"
 	kafka "github.com/segmentio/kafka-go"
 
-	child_workflow "github.com/aanthord/temporalio_poc/child-workflow"
+	child_workflow "github.com/aanthord/temporalio_poc/create_orgwallet"
 )
 //get a list of all the topics
 func getKafkaTopics(kafkaURL) {

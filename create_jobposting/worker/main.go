@@ -6,7 +6,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	child_workflow "github.com/aanthord/temporalio_poc/child-workflow"
+	child_workflow "github.com/aanthord/temporalio_poc/create_jobposting"
 )
 
 func main() {
