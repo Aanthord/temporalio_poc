@@ -18,7 +18,7 @@ func CreateWalletParentWorkflow(ctx workflow.Context) (string, error) {
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
 	var result string
-	err := workflow.ExecuteChildWorkflow(ctx, SampleChildWorkflow, "World").Get(ctx, &result)
+	err := workflow.ExecuteChildWorkflow(ctx, CreateWalletChildWorkflow, "World").Get(ctx, &result)
 	if err != nil {
 		logger.Error("Parent execution received child execution failure.", "Error", err)
 		return "", err
