@@ -7,7 +7,7 @@ import (
 	"github.com/pborman/uuid"
 	"go.temporal.io/sdk/client"
 
-	child_workflow "github.com/temporalio/samples-go/child-workflow"
+	child_workflow "github.com/aanthord/temporalio_poc/create_wallet"
 )
 
 // @@@SNIPSTART samples-go-child-workflow-example-execution-starter
