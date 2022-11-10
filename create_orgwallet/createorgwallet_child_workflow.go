@@ -18,8 +18,8 @@ import (
         "go.opentelemetry.io/otel/sdk/resource"
         tracesdk "go.opentelemetry.io/otel/sdk/trace"
         semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson/"
-		"github.com/aanthord/temporalio_poc/kafka/"
+		"github.com/aanthord/temporalio_poc/watson"
+		"github.com/aanthord/temporalio_poc/kafka"
 
 		
 )
