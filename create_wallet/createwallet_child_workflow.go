@@ -1,16 +1,17 @@
 package child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
+	"go.temporal.io/sdk/workflow"
+	"log"
+	"context"
     	"fmt"
         "os"
         "strings"
-		"json"
+	"json"
         "go.temporal.io/sdk/client"
         "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
+        "go.temporal.io/sdk/activity"
+	kafka "github.com/segmentio/kafka-go"
         "time"
         "go.opentelemetry.io/otel"
         "go.opentelemetry.io/otel/attribute"
@@ -18,8 +19,8 @@ import (
         "go.opentelemetry.io/otel/sdk/resource"
         tracesdk "go.opentelemetry.io/otel/sdk/trace"
         semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson/"
-		"github.com/aanthord/temporalio_poc/kafka/"
+	"github.com/aanthord/temporalio_poc/watson/"
+	"github.com/aanthord/temporalio_poc/kafka/"
 
 		
 )
@@ -63,6 +64,31 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 		MaxBytes: 10e6, // 10MB
 	})
 }
+
+func RetryWorkflow(ctx workflowContext) error {
+	ao := workflow.ActivityOptions{
+		StartToClostTimeout: 2 * time.Minute,
+		StartToCloseTimeout: 10 * time.Second,
+		RetryPolicy: &temporal.retryPolicy{
+			InitialIntercal: time.Second,
+			BackoffCoefficient: 2.0,
+			MaximumInterval: time.Minute,
+			MaximumAttempts: 5,
+		},,
+	}
+	ctx = workflow.WithActivityOptions(ctx, ao)
+
+	err := workdflow.ExecuteActivity(ctx, BatchProcessingActivity, 0, 20, time.Second.Get(ctx, nil)
+	if err != nil {
+		workflow.getLogger(ctx).Info("Workdlow completed with error.", "Error, err)"
+		return err
+	}
+	workflow.GetLogger(ctx).Info("Workflow Completed")
+	return nil
+}
+
+
+
 
 func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	// The client is a heavyweight object that should be created only once per process.
