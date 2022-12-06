@@ -7,7 +7,7 @@ import (
     	"fmt"
         "os"
         "strings"
-		"json"
+		"encoding/json"
         "go.temporal.io/sdk/client"
         "go.temporal.io/sdk/worker"
         kafka "github.com/segmentio/kafka-go"

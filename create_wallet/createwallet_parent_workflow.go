@@ -4,11 +4,6 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-// @@@SNIPSTART samples-go-child-workflow-example-parent-workflow-definition
-// SampleParentWorkflow is a Workflow Definition
-// This Workflow Definition demonstrates how to start a Child Workflow Execution from a Parent Workflow Execution.
-// Each Child Workflow Execution starts a new Run.
-// The Parent Workflow Execution is notified only after the completion of last Run of the Child Workflow Execution.
 func CreateWalletParentWorkflow(ctx workflow.Context) (string, error) {
 	logger := workflow.GetLogger(ctx)
 

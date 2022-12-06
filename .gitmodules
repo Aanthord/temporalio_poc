@@ -4,3 +4,6 @@
 [submodule "compose-files/compose-files/watson"]
 	path = compose-files/compose-files/watson
 	url = https://github.com/talentpair/watson.git
+[submodule "compose-files/airbyte"]
+	path = compose-files/airbyte
+	url = https://github.com/airbytehq/airbyte.git

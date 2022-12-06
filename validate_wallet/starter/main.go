@@ -7,10 +7,9 @@ import (
 	"github.com/pborman/uuid"
 	"go.temporal.io/sdk/client"
 
-	child_workflow "github.com/temporalio/samples-go/child-workflow"
+	child_workflow "github.com/aanthord/temporalio_poc/validate_wallet"
 )
 
-// @@@SNIPSTART samples-go-child-workflow-example-execution-starter
 func main() {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
@@ -46,5 +45,3 @@ func main() {
 	}
 	log.Printf("Workflow result: %v", result)
 }
-
-// @@@SNIPEND
