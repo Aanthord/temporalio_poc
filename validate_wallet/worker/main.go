@@ -8,8 +8,6 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-
-	child_workflow "github.com/aanthord/temporalio_poc/validate_wallet"
 )
 
 //get a list of all the topics
@@ -61,8 +59,8 @@ func main() {
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletParentWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

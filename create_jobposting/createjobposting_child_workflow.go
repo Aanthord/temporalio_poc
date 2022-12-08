@@ -1,4 +1,4 @@
-package child_workflow
+package createjobposting_child_workflow
 
 import (
 		"go.temporal.io/sdk/workflow"
@@ -24,7 +24,7 @@ import (
 		
 )
 const (
-	service     = "temporalio-createwallet"
+	service     = "temporalio-createjobposting"
 	environment = "test"
 	id          = 1
 )
@@ -64,7 +64,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateJobPostingWorkflow(ctx workflow.Context, name string) (string, error) {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,

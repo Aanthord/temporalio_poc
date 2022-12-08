@@ -7,7 +7,7 @@ import (
 	"github.com/pborman/uuid"
 	"go.temporal.io/sdk/client"
 
-	child_workflow "github.com/aanthord/temporalio_poc/create_wallet"
+	createwallet_child_workflow "github.com/aanthord/temporalio_poc/create_wallet"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 		TaskQueue: "child-workflow",
 	}
 
-	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, child_workflow.SampleParentWorkflow)
+	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, createwallet_child_workflow.CreateWalletParentWorkflow)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
 	}

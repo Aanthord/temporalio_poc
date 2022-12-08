@@ -1,10 +1,10 @@
-package child_workflow
+package validatewallet_child_workflow
 
 import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func SampleParentWorkflow(ctx workflow.Context) (string, error) {
+func ValidateWalletParentWorkflow(ctx workflow.Context) (string, error) {
 	logger := workflow.GetLogger(ctx)
 
 	cwo := workflow.ChildWorkflowOptions{
@@ -13,7 +13,7 @@ func SampleParentWorkflow(ctx workflow.Context) (string, error) {
 	ctx = workflow.WithChildOptions(ctx, cwo)
 
 	var result string
-	err := workflow.ExecuteChildWorkflow(ctx, SampleChildWorkflow, "World").Get(ctx, &result)
+	err := workflow.ExecuteChildWorkflow(ctx, ValidateWalletChildWorkflow, "World").Get(ctx, &result)
 	if err != nil {
 		logger.Error("Parent execution received child execution failure.", "Error", err)
 		return "", err

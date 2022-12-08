@@ -27,7 +27,7 @@ func main() {
 		TaskQueue: "child-workflow",
 	}
 
-	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, child_workflow.SampleParentWorkflow)
+	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, child_workflow.ValidateWalletParentWorkflow)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
 	}

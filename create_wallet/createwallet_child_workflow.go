@@ -1,4 +1,4 @@
-package child_workflow
+package createwallet_child_workflow
 
 import (
 		"go.temporal.io/sdk/workflow"
