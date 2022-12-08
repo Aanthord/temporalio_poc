@@ -1,4 +1,4 @@
-package watsonpostwalletcreate
+package watson
 
 import (
 	"encoding/json"
@@ -9,11 +9,10 @@ import (
 	"os"
 )
 
-type Post struct {
-	Userid string `json:"user_id"`
-}
-
-func main(nextUserId string) {
+func WatsonPostWalletCreateGP(nextUserId string) {
+	type post struct {
+		Userid string `json:"user_id"`
+	}
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
@@ -36,5 +35,5 @@ func main(nextUserId string) {
 		return
 	}
 
-	log.Printf("Post added with ID %d", post.ID)
+	log.Printf("Post added with ID %d", post.Userid)
 }

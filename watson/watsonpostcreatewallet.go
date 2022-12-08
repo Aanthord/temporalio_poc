@@ -1,4 +1,4 @@
-package watsonpostreatewallet
+package watson
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ type Post struct {
 	Userid string `json:"user_id"`
 }
 
-func main(nextUserId string) {
+func WatsonPostCreateWallet(nextUserId string) {
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)

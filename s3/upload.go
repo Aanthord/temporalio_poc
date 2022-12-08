@@ -1,4 +1,4 @@
-package main
+package s3
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ const (
 	AWS_S3_BUCKET = ""
 )
 
-func main() {
+func uploads3() {
 	session, err := session.NewSession(&aws.Config{Region: aws.String(AWS_S3_REGION)})
 	if err != nil {
 		log.Fatal(err)
