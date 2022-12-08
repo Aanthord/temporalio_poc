@@ -6,7 +6,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	child_workflow "github.com/aanthord/temporalio_poc/create_gp"
+	creategp_child_workflow "github.com/aanthord/temporalio_poc/create_gp"
 )
 
 func main() {
@@ -21,8 +21,8 @@ func main() {
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateGPParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateGPChildWorkflow)
+	w.RegisterWorkflow(creategp_child_workflow.CreateGPParentWorkflow)
+	w.RegisterWorkflow(creategp_child_workflow.CreateGPChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

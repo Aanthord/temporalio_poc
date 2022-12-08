@@ -1,10 +1,10 @@
-package child_workflow
+package creategp_child_workflow
 
 import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func CreateRecruiterChildWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateGPChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 	greeting := "Hello " + name + "!"
 	logger.Info("Child workflow execution: " + greeting)

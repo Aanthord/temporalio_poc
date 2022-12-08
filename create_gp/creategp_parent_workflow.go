@@ -1,4 +1,4 @@
-package child_workflow
+package creategp_child_workflow
 
 import (
 	"go.temporal.io/sdk/workflow"

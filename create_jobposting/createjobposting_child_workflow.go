@@ -64,7 +64,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func CreateJobPostingWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
