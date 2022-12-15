@@ -1,4 +1,4 @@
-package kafkaReader
+package Reader
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
 )
 
 const (
@@ -58,7 +57,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func main() {
+func Reader() {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
@@ -68,31 +67,21 @@ func main() {
 	}
 	defer c.Close()
 
-	w := worker.New(c, "child-workflow", worker.Options{})
+	// get kafka reader using environment variables.
+	kafkaURL := os.Getenv("kafkaURL")
+	topic := os.Getenv("topic")
+	groupID := os.Getenv("groupID")
 
-	w.RegisterWorkflow(child_workflow.SampleParentWorkflow)
-	w.RegisterWorkflow(child_workflow.SampleChildWorkflow)
+	reader := getKafkaReader(kafkaURL, topic, groupID)
 
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
+	defer reader.Close()
 
-		// get kafka reader using environment variables.
-		kafkaURL := os.Getenv("kafkaURL")
-		topic := os.Getenv("topic")
-		groupID := os.Getenv("groupID")
-
-		reader := getKafkaReader(kafkaURL, topic, groupID)
-
-		defer reader.Close()
-
-		fmt.Println("start consuming ... !!")
-		for {
-			m, err := reader.ReadMessage(context.Background())
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+	fmt.Println("start consuming ... !!")
+	for {
+		m, err := reader.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatalln(err)
 		}
+		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 	}
 }

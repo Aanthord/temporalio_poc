@@ -107,8 +107,14 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
                                           // into a map[string]interface{}
 
 		logger.Info("Getting user_id")
-		legacy.LegacyGetJobPosting(string(m.Userid))
-		//Need to do stuff here so I can pass userID to watson
+		profile := legacy.LegacyGet(string(m.Userid)) 
+		err := os.WriteFile("/tmp/" + string(m.Userid) + ".json", profile, 0644)
+        check(err)
+		
+		logger.Info("Saving Legacy Data to S3")
+		s3.upload.uploads3("/tmp/" + string(m.Userid) + ".json")
+		
+
 		logger.Info("Posting to Watson")
 		watson.WatsonPostCreateWallet(string(m.Userid))
 	}
