@@ -1,28 +1,25 @@
 package createwallet_child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"fmt"
-        "os"
-        "strings"
-		"encoding/json"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson"
-		"github.com/aanthord/temporalio_poc/kafka"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 
-		
+	"github.com/aanthord/temporalio_poc/watson"
+	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
+	"go.temporal.io/sdk/workflow"
 )
+
 const (
 	service     = "temporalio-createwallet"
 	environment = "test"
@@ -76,13 +73,13 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletParentWorkflow)
+	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
 		log.Fatalln("Unable to start worker", err)
-
+	}
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
 	topic := os.Getenv("topic")
@@ -102,15 +99,15 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		logger.Info("Consuming message")
 		var payload interface{} // The interface where we will save the converted JSON data.
 
-    	json.Unmarshal(m, &payload) // Convert JSON data into interface{} type
-    	m := payload.(map[string]interface{}) // To use the converted data we will need to convert it 
-                                          // into a map[string]interface{}
+		json.Unmarshal(m, &payload)           // Convert JSON data into interface{} type
+		m := payload.(map[string]interface{}) // To use the converted data we will need to convert it
+		// into a map[string]interface{}
 
 		logger.Info("Getting user_id")
-		
+
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostcreatewallet(m.["userid"].(string))
-		
+		watson.WatsonPostCreateWallet(string(m.userid))
+
 	}
 }

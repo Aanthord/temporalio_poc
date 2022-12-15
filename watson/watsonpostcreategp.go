@@ -1,8 +1,7 @@
 package watson
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -10,9 +9,6 @@ import (
 )
 
 func WatsonPostWalletCreateGP(nextUserId string) {
-	type post struct {
-		Userid string `json:"user_id"`
-	}
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
@@ -23,17 +19,15 @@ func WatsonPostWalletCreateGP(nextUserId string) {
 		return
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	// Log the request body
 	bodyString := string(body)
 	log.Print(bodyString)
-	// Unmarshal result
-	post := Post{}
-	err = json.Unmarshal(body, &post)
+
 	if err != nil {
 		log.Printf("Reading body failed: %s", err)
 		return
 	}
 
-	log.Printf("Post added with ID %d", post.Userid)
+	log.Printf("Posted to CreateGPNFTWatston")
 }

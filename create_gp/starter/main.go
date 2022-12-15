@@ -7,7 +7,7 @@ import (
 	"github.com/pborman/uuid"
 	"go.temporal.io/sdk/client"
 
-	child_workflow "github.com/aanthord/temporalio_poc/create_gp"
+	create_gp_child_workflow "github.com/aanthord/temporalio_poc/create_gp"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 		TaskQueue: "child-workflow",
 	}
 
-	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, child_workflow.SampleParentWorkflow)
+	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, create_gp_child_workflow.CreateGPParentWorkflow)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
 	}

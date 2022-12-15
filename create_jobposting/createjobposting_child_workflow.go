@@ -1,27 +1,27 @@
 package createjobposting_child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"fmt"
-        "os"
-        "strings"
-		"encoding/json"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson"
-		"github.com/aanthord/temporalio_poc/kafka"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"time"
 
-		
+	"github.com/aanthord/temporalio_poc/kafka"
+	"github.com/aanthord/temporalio_poc/legacy"
+	"github.com/aanthord/temporalio_poc/watson"
+	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
+	"go.temporal.io/sdk/workflow"
 )
 const (
 	service     = "temporalio-createjobposting"
@@ -76,8 +76,8 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateJobPostingParentWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateJobPostingChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
@@ -107,10 +107,10 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
                                           // into a map[string]interface{}
 
 		logger.Info("Getting user_id")
-		
+		legacy.LegacyGetJobPosting(string(m.Userid))
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostcreatejobposting(m.["userid"].(string))
-		
+		watson.WatsonPostCreateWallet(string(m.Userid))
 	}
+
 }
