@@ -62,6 +62,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 }
 
 func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
+	logger := workflow.GetLogger(ctx)
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
@@ -73,8 +74,8 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
+	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
@@ -99,15 +100,15 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		logger.Info("Consuming message")
 		var payload interface{} // The interface where we will save the converted JSON data.
 
-		json.Unmarshal(m, &payload)           // Convert JSON data into interface{} type
-		m := payload.(map[string]interface{}) // To use the converted data we will need to convert it
+		json.Unmarshal(m, &payload)   // Convert JSON data into interface{} type
+		um := payload.(kafka.Message) // To use the converted data we will need to convert it
 		// into a map[string]interface{}
 
 		logger.Info("Getting user_id")
 
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watson.WatsonPostCreateWallet(string(m.userid))
+		watson.WatsonPostCreateWallet(string(um.Userid))
 
 	}
 }
