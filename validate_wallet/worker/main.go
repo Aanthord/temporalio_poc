@@ -8,10 +8,12 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+
+	validatewallet_child_workflow "github.com/aanthord/temporalio_poc/validate_wallet"
 )
 
-//get a list of all the topics
-func getKafkaTopics(kafkaURL) {
+// get a list of all the topics
+func getKafkaTopics(kafkaURL string) {
 	conn, err := kafka.Dial("tcp", kafkaURL)
 	if err != nil {
 		panic(err.Error())

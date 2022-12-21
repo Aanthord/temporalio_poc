@@ -76,8 +76,8 @@ func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, err
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.ValidateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.ValidateWalletChildWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletParentWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
@@ -110,7 +110,7 @@ func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, err
 		
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostvalidatewallet(m.["userid"].(string))
+		watsonpostvalidatewallet(string(m.userID))
 		
 	}
 }
