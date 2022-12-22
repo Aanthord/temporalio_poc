@@ -19,7 +19,7 @@ import (
         tracesdk "go.opentelemetry.io/otel/sdk/trace"
         semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 		"github.com/aanthord/temporalio_poc/watson"
-		"github.com/aanthord/temporalio_poc/kafka"
+		kfka "github.com/aanthord/temporalio_poc/kfka"
 
 		
 )
@@ -110,7 +110,7 @@ func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, err
 		
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostvalidatewallet(string(m.userID))
+		watson.WatsonPostvalidateWallet(string(m.userID))
 		
 	}
 }

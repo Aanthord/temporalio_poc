@@ -1,4 +1,4 @@
-package child_workflow
+package createorgwallet_child_workflow
 
 import (
 	"go.temporal.io/sdk/workflow"
@@ -21,8 +21,7 @@ func CreateOrgWalletParentWorkflow(ctx workflow.Context) (string, error) {
 
 	logger.Info("Parent execution completed.", "Result", result)
 	logger.Info("Writing message to next topic")
-		kafkaWriter(validateWallet, "userid", m.["userid"].(string))
+	//kfka.Writer(validateWallet, "userid", m.["userid"].(string))
 	// action to write to next topic
 	return result, nil
 }
-

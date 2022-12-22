@@ -11,7 +11,6 @@ import (
 	"github.com/aanthord/temporalio_poc/watson"
 	kafka "github.com/segmentio/kafka-go"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -43,15 +42,6 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 	}
 	defer c.Close()
 
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
-	}
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
 	topic := os.Getenv("topic")

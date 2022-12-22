@@ -2,7 +2,6 @@ package createjobposting_child_workflow
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -99,16 +98,13 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
 			}
 			fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 			logger.Info("Consuming message")
-			var payload interface{} // The interface where we will save the converted JSON data.
 
-			json.Unmarshal(m, &payload)           // Convert JSON data into interface{} type
-			m := payload.(map[string]interface{}) // To use the converted data we will need to convert it
-			// into a map[string]interface{}
 			logger.Info("Getting user_id")
 			profile := legacy.LegacyGet(string(m.Userid))
-
-			err := os.WriteFile("/tmp/"+string(m.Userid)+".json", profile, 0644)
-			check(err)
+			write := os.WriteFile("/tmp/"+string(m.Userid)+".json", profile, 0644)
+			if write != nil {
+				log.Fatalln(err)
+			}
 
 			logger.Info("Saving Legacy Data to S3")
 			s3.upload.uploads3("/tmp/" + string(m.Userid) + ".json")
