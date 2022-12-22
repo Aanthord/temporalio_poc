@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aanthord/temporalio_poc/legacy"
+	"github.com/aanthord/temporalio_poc/s3"
 	"github.com/aanthord/temporalio_poc/watson"
 	kafka "github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,7 +17,6 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -72,38 +72,40 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
 	}
 	defer c.Close()
 
-		// get kafka reader using environment variables.
-		kafkaURL := os.Getenv("kafkaURL")
-		topic := os.Getenv("topic")
-		groupID := os.Getenv("groupID")
+	// get kafka reader using environment variables.
+	kafkaURL := os.Getenv("kafkaURL")
+	topic := os.Getenv("topic")
+	groupID := os.Getenv("groupID")
 
-		reader := getKafkaReader(kafkaURL, topic, groupID)
+	reader := getKafkaReader(kafkaURL, topic, groupID)
 
-		defer reader.Close()
+	defer reader.Close()
 
-		fmt.Println("start consuming ... !!")
-		for {
-			m, err := reader.ReadMessage(context.Background())
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-			logger.Info("Consuming message")
-
-			logger.Info("Getting user_id")
-			profile := legacy.LegacyGet(string(m.Userid))
-			write := os.WriteFile("/tmp/"+string(m.Userid)+".json", profile, 0644)
-			if write != nil {
-				log.Fatalln(err)
-			}
-
-			logger.Info("Saving Legacy Data to S3")
-			s3.upload.uploads3("/tmp/" + string(m.Userid) + ".json")
-
-			logger.Info("Posting to Watson")
-			watson.WatsonPostCreateWallet(string(m.Userid))
-
-			return profile, nil
+	fmt.Println("start consuming ... !!")
+	for {
+		m, err := reader.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatalln(err)
 		}
+		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+		logger.Info("Consuming message")
+
+		logger.Info("Getting user_id")
+		profile := legacy.LegacyGet(string(m.Userid))
+
+		//profile := legacy.LegacyGet(string(m.Userid))
+		write := os.WriteFile("/tmp/"+string(m.Userid)+".json", profile, 0644)
+		if write != nil {
+			log.Fatalln(err)
+		}
+
+		logger.Info("Saving Legacy Data to S3")
+		s3.Uploads3("/tmp/" + string(m.Userid) + ".json")
+		//s3.uploads3("/tmp/" + string(m.Userid) + ".json")
+
+		logger.Info("Posting to Watson")
+		watson.WatsonPostCreateWallet(string(m.Userid))
+
+		return profile, nil
 	}
 }

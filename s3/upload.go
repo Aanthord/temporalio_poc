@@ -18,20 +18,20 @@ const (
 	AWS_S3_BUCKET = ""
 )
 
-func uploads3(file string) {
+func Uploads3(file string) {
 	session, err := session.NewSession(&aws.Config{Region: aws.String(AWS_S3_REGION)})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Upload Files
-	err = uploadFile(session, file)
+	err = UploadFile(session, file)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func uploadFile(session *session.Session, uploadFileDir string) error {
+func UploadFile(session *session.Session, uploadFileDir string) error {
 
 	upFile, err := os.Open(uploadFileDir)
 	if err != nil {
