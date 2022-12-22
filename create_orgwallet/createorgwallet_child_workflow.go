@@ -62,7 +62,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateOrgWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	logger := workflow.GetLogger(ctx)
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
@@ -72,15 +72,6 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
-
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(createorgwallet_child_workflow.CreateOrgWalletParentWorkflow)
-	w.RegisterWorkflow(createorgwallet_child_workflow.CreateOrgWalletChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
 
 		// get kafka reader using environment variables.
 		kafkaURL := os.Getenv("kafkaURL")

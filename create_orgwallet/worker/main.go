@@ -9,10 +9,10 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	child_workflow "github.com/aanthord/temporalio_poc/create_orgwallet"
+	createorgwallet_child_workflow "github.com/aanthord/temporalio_poc/create_orgwallet"
 )
 
-//get a list of all the topics
+// get a list of all the topics
 func getKafkaTopics(kafkaURL) {
 	conn, err := kafka.Dial("tcp", kafkaURL)
 	if err != nil {
@@ -61,8 +61,8 @@ func main() {
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(createorgwallet_child_workflow.CreateOrgWalletParentWorkflow)
+	w.RegisterWorkflow(createorgwallet_child_workflow.CreateOrgWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

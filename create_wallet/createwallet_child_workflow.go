@@ -59,10 +59,11 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
-		var payload interface{} // The interface where we will save the converted JSON data.
-		b, _ := json.Marshal(m)
-		json.Unmarshal([]byte(b), &payload)    // Convert JSON data into interface{} type
-		um := payload.(map[string]interface{}) // To use the converted data we will need to convert it
+		var payload interface{}                // The interface where we will save the converted JSON data.
+		b, _ := json.Marshal(m)                // Need to marshal kafka.Message to make it consumable by unmarshal
+		json.Unmarshal([]byte(b), &payload)    // UnMarshal byte array created above for conversion into mapped interface.
+		um := payload.(map[string]interface{}) // Convert JSON data into interface{} type
+		// To use the converted data we will need to convert it
 		// into a map[string]interface{}
 
 		logger.Info("Getting user_id")

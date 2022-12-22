@@ -72,15 +72,6 @@ func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, e
 	}
 	defer c.Close()
 
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(child_workflow.CreateJobPostingParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateJobPostingChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
-
 		// get kafka reader using environment variables.
 		kafkaURL := os.Getenv("kafkaURL")
 		topic := os.Getenv("topic")
