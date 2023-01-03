@@ -1,28 +1,24 @@
-package child_workflow
+package validatewallet_child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"fmt"
-        "os"
-        "strings"
-		"json"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson/"
-		"github.com/aanthord/temporalio_poc/kafka/"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 
-		
+	"github.com/aanthord/temporalio_poc/watson"
+	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/workflow"
 )
+
 const (
 	service     = "temporalio-validatewallet"
 	environment = "test"
@@ -66,6 +62,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 
 func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
 	// The client is a heavyweight object that should be created only once per process.
+	logger := workflow.GetLogger(ctx)
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
 	})
@@ -73,15 +70,6 @@ func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, err
 		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
-
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(child_workflow.ValidateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.ValidateWalletChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
 
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
@@ -101,16 +89,14 @@ func ValidateWalletChildWorkflow(ctx workflow.Context, name string) (string, err
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
 		var payload interface{} // The interface where we will save the converted JSON data.
+		b, _ := json.Marshal(m)
+		json.Unmarshal([]byte(b), &payload)    // Convert JSON data into interface{} type
+		um := payload.(map[string]interface{}) // To use the converted data we will need to convert it
+		// into a map[string]interface{}
 
-    	json.Unmarshal(m, &payload) // Convert JSON data into interface{} type
-    	m := payload.(map[string]interface{}) // To use the converted data we will need to convert it 
-                                          // into a map[string]interface{}
-
-		logger.Info("Getting user_id")
-		
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostvalidatewallet(m.["userid"].(string))
-		
+		watson.WatsonPostvalidateWallet(string(um.Userid))
+
 	}
 }

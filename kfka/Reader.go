@@ -1,19 +1,29 @@
-package main
+package kfka
 
 import (
-	"log"
 	"context"
-	"format"
+	"fmt"
+	"log"
 	"os"
-	"stings"
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
+	"strings"
+
 	kafka "github.com/segmentio/kafka-go"
 
-	child_workflow "github.com/aanthord/temporalio_poc/child-workflow"
+	"go.temporal.io/sdk/client"
 )
 
-func main() {
+func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
+	brokers := strings.Split(kafkaURL, ",")
+	return kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  brokers,
+		GroupID:  groupID,
+		Topic:    topic,
+		MinBytes: 10e3, // 10KB
+		MaxBytes: 10e6, // 10MB
+	})
+}
+
+func Reader() {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
@@ -22,15 +32,6 @@ func main() {
 		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
-
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(child_workflow.SampleParentWorkflow)
-	w.RegisterWorkflow(child_workflow.SampleChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
 
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
@@ -48,6 +49,6 @@ func main() {
 			log.Fatalln(err)
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		
+
 	}
 }

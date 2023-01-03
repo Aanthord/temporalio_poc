@@ -1,7 +1,6 @@
-package watsonpostwalletcreate
+package watson
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,11 +8,7 @@ import (
 	"os"
 )
 
-type Post struct {
-	Userid string `json:"user_id"`
-}
-
-func main(nextUserId string) {
+func WatsonPostWalletCreateOrgWallet(nextUserId string) {
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
@@ -28,13 +23,11 @@ func main(nextUserId string) {
 	// Log the request body
 	bodyString := string(body)
 	log.Print(bodyString)
-	// Unmarshal result
-	post := Post{}
-	err = json.Unmarshal(body, &post)
+
 	if err != nil {
 		log.Printf("Reading body failed: %s", err)
 		return
 	}
 
-	log.Printf("Post added with ID %d", post.ID)
+	log.Printf("Org wallet created")
 }

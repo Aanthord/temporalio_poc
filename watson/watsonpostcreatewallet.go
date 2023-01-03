@@ -1,19 +1,14 @@
-package watsonpostreatewallet
+package watson
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 )
 
-type Post struct {
-	Userid string `json:"user_id"`
-}
-
-func main(nextUserId string) {
+func WatsonPostCreateWallet(nextUserId string) {
 	watsonURL := (os.Getenv("watsonURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
@@ -24,17 +19,15 @@ func main(nextUserId string) {
 		return
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	// Log the request body
 	bodyString := string(body)
 	log.Print(bodyString)
-	// Unmarshal result
-	post := Post{}
-	err = json.Unmarshal(body, &post)
+
 	if err != nil {
 		log.Printf("Reading body failed: %s", err)
 		return
 	}
 
-	log.Printf("Post added with ID %d", post.ID)
+	log.Printf("Wallet Created")
 }

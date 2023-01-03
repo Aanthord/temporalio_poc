@@ -1,30 +1,27 @@
-package child_workflow
+package createjobposting_child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"fmt"
-        "os"
-        "strings"
-		"json"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson/"
-		"github.com/aanthord/temporalio_poc/kafka/"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 
-		
+	"github.com/aanthord/temporalio_poc/legacy"
+	"github.com/aanthord/temporalio_poc/s3"
+	"github.com/aanthord/temporalio_poc/watson"
+	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/workflow"
 )
+
 const (
-	service     = "temporalio-createwallet"
+	service     = "temporalio-createjobposting"
 	environment = "test"
 	id          = 1
 )
@@ -64,7 +61,8 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
+func CreateJobPostingChildWorkflow(ctx workflow.Context, name string) (string, error) {
+	logger := workflow.GetLogger(ctx)
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
@@ -73,15 +71,6 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
-
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
 
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
@@ -100,17 +89,23 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
-		var payload interface{} // The interface where we will save the converted JSON data.
-
-    	json.Unmarshal(m, &payload) // Convert JSON data into interface{} type
-    	m := payload.(map[string]interface{}) // To use the converted data we will need to convert it 
-                                          // into a map[string]interface{}
 
 		logger.Info("Getting user_id")
-		
-		//Need to do stuff here so I can pass userID to watson
+		profile := legacy.LegacyGet(string(m.Userid))
+
+		//profile := legacy.LegacyGet(string(m.Userid))
+		write := os.WriteFile("/tmp/"+string(m.Userid)+".json", profile, 0644)
+		if write != nil {
+			log.Fatalln(err)
+		}
+
+		logger.Info("Saving Legacy Data to S3")
+		s3.Uploads3("/tmp/" + string(m.Userid) + ".json")
+		//s3.uploads3("/tmp/" + string(m.Userid) + ".json")
+
 		logger.Info("Posting to Watson")
-		watsonpostcreatejobposting(m.["userid"].(string))
-		
+		watson.WatsonPostCreateWallet(string(m.Userid))
+
+		return profile, nil
 	}
 }

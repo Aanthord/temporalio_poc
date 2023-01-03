@@ -7,10 +7,9 @@ import (
 	"github.com/pborman/uuid"
 	"go.temporal.io/sdk/client"
 
-	child_workflow "github.com/temporalio/samples-go/child-workflow"
+	create_gp_child_workflow "github.com/aanthord/temporalio_poc/create_gp"
 )
 
-// @@@SNIPSTART samples-go-child-workflow-example-execution-starter
 func main() {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
@@ -28,7 +27,7 @@ func main() {
 		TaskQueue: "child-workflow",
 	}
 
-	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, child_workflow.SampleParentWorkflow)
+	workflowRun, err := c.ExecuteWorkflow(context.Background(), workflowOptions, create_gp_child_workflow.CreateGPParentWorkflow)
 	if err != nil {
 		log.Fatalln("Unable to execute workflow", err)
 	}
@@ -46,5 +45,3 @@ func main() {
 	}
 	log.Printf("Workflow result: %v", result)
 }
-
-// @@@SNIPEND

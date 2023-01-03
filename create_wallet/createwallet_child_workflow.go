@@ -1,56 +1,38 @@
-package child_workflow
+package createwallet_child_workflow
 
 import (
-		"go.temporal.io/sdk/workflow"
-	    "log"
-		"context"
-    	"fmt"
-        "os"
-        "strings"
-		"json"
-        "go.temporal.io/sdk/client"
-        "go.temporal.io/sdk/worker"
-        kafka "github.com/segmentio/kafka-go"
-        "time"
-        "go.opentelemetry.io/otel"
-        "go.opentelemetry.io/otel/attribute"
-        "go.opentelemetry.io/otel/exporters/jaeger"
-        "go.opentelemetry.io/otel/sdk/resource"
-        tracesdk "go.opentelemetry.io/otel/sdk/trace"
-        semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-		"github.com/aanthord/temporalio_poc/watson/"
-		"github.com/aanthord/temporalio_poc/kafka/"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 
-		
+	"github.com/aanthord/temporalio_poc/watson"
+	kafka "github.com/segmentio/kafka-go"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/workflow"
 )
+
 const (
 	service     = "temporalio-createwallet"
 	environment = "test"
 	id          = 1
 )
 
-// tracerProvider returns an OpenTelemetry TracerProvider configured to use
-// the Jaeger exporter that will send spans to the provided url. The returned
-// TracerProvider will also use a Resource configured with all the information
-// about the application.
-func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
-	// Create the Jaeger exporter
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
-	if err != nil {
-		return nil, err
+type Event struct {
+	_airbyte_ab_id string `json:"-"`
+	// json tag with - does not parse a result
+	// items in struct not defined with a cap will not EXPORT or be available
+	_airbyte_emitted_at string `json:"-"`
+	_airbyte_data       struct {
+		//Need to change topic name for each workflow
+		Candidates_neocandidate struct {
+			User_id string `json:"Userid"`
+			//Need to change in env file best to setup go-env to handle at compile time
+		}
 	}
-	tp := tracesdk.NewTracerProvider(
-		// Always be sure to batch in production.
-		tracesdk.WithBatcher(exp),
-		// Record information about this application in a Resource.
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(service),
-			attribute.String("environment", environment),
-			attribute.Int64("ID", id),
-		)),
-	)
-	return tp, nil
+	_airbyte_stream string `json:"-"`
 }
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
@@ -65,6 +47,7 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 }
 
 func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error) {
+	logger := workflow.GetLogger(ctx)
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
 		HostPort: client.DefaultHostPort,
@@ -73,15 +56,6 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
-
-	w := worker.New(c, "child-workflow", worker.Options{})
-
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
-
-	err = w.Run(worker.InterruptCh())
-	if err != nil {
-		log.Fatalln("Unable to start worker", err)
 
 	// get kafka reader using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
@@ -100,17 +74,20 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
-		var payload interface{} // The interface where we will save the converted JSON data.
-
-    	json.Unmarshal(m, &payload) // Convert JSON data into interface{} type
-    	m := payload.(map[string]interface{}) // To use the converted data we will need to convert it 
-                                          // into a map[string]interface{}
+		//var Event interface{}
+		e := Event{}            // The interface where we will save the converted JSON data.
+		b, _ := json.Marshal(m) // Need to marshal kafka.Message to make it consumable by unmarshal
+		json.Unmarshal([]byte(b), &e)
+		// UnMarshal byte array created above for conversion into mapped interface.
+		//um := payload.(map[string]interface{}) // Convert JSON data into interface{} type
+		// To use the converted data we will need to convert it
+		// into a map[string]interface{}
 
 		logger.Info("Getting user_id")
-		
+
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
-		watsonpostcreatewallet(m.["userid"].(string))
-		
+		watson.WatsonPostCreateWallet(e._airbyte_data.Candidates_neocandidate.User_id)
+
 	}
 }

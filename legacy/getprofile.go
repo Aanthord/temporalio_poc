@@ -1,4 +1,4 @@
-package watson
+package legacy
 
 import (
 	"io"
@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func WatsonPostWalletCreateGP(nextUserId string) {
-	watsonURL := (os.Getenv("watsonURL"))
+func LegacyGet(nextUserId string) {
+	watsonURL := (os.Getenv("legacyURL"))
 	params := url.Values{}
 	params.Add("user_id", nextUserId)
 	resp, err := http.PostForm(watsonURL,
@@ -29,5 +29,5 @@ func WatsonPostWalletCreateGP(nextUserId string) {
 		return
 	}
 
-	log.Printf("Posted to CreateGPNFTWatston")
+	log.Printf("Got from legacy")
 }

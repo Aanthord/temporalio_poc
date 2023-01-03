@@ -1,38 +1,38 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"context"
-	"format"
-	"os"
 	"strings"
+
+	kafka "github.com/segmentio/kafka-go"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	kafka "github.com/segmentio/kafka-go"
 
-	child_workflow "github.com/aanthord/temporalio_poc/child-workflow"
+	validatewallet_child_workflow "github.com/aanthord/temporalio_poc/validate_wallet"
 )
-//get a list of all the topics
-func getKafkaTopics(kafkaURL) {
+
+// get a list of all the topics
+func getKafkaTopics(kafkaURL string) {
 	conn, err := kafka.Dial("tcp", kafkaURL)
 	if err != nil {
-    panic(err.Error())
-}
+		panic(err.Error())
+	}
 	defer conn.Close()
 
 	partitions, err := conn.ReadPartitions()
 	if err != nil {
-    		panic(err.Error())
-}
+		panic(err.Error())
+	}
 
 	m := map[string]struct{}{}
 
 	for _, p := range partitions {
-    	m[p.Topic] = struct{}{}
-}
+		m[p.Topic] = struct{}{}
+	}
 	for k := range m {
-    	fmt.Println(k)
-}
+		fmt.Println(k)
+	}
 }
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
@@ -45,28 +45,27 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 		MaxBytes: 10e6, // 10MB
 	})
 }
+
 //Brain hurt need to iterate over topics in the list and call main for each topic creating a distinct
-// count of messages in each topic. 
+// count of messages in each topic.
 
 func main() {
 	// The client is a heavyweight object that should be created only once per process.
 	c, err := client.Dial(client.Options{
-			HostPort: client.DefaultHostPort,
+		HostPort: client.DefaultHostPort,
 	})
 	if err != nil {
-			log.Fatalln("Unable to create client", err)
+		log.Fatalln("Unable to create client", err)
 	}
 	defer c.Close()
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletParentWorkflow)
+	w.RegisterWorkflow(validatewallet_child_workflow.ValidateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
-			log.Fatalln("Unable to start worker", err)
+		log.Fatalln("Unable to start worker", err)
 	}
-}
-
 }

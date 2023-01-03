@@ -6,7 +6,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	child_workflow "github.com/aanthord/temporalio_poc/create_wallet"
+	createwallet_child_workflow "github.com/aanthord/temporalio_poc/create_wallet"
 )
 
 func main() {
@@ -21,8 +21,8 @@ func main() {
 
 	w := worker.New(c, "child-workflow", worker.Options{})
 
-	w.RegisterWorkflow(child_workflow.CreateWalletParentWorkflow)
-	w.RegisterWorkflow(child_workflow.CreateWalletChildWorkflow)
+	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletParentWorkflow)
+	w.RegisterWorkflow(createwallet_child_workflow.CreateWalletChildWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
