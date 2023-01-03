@@ -21,11 +21,15 @@ const (
 )
 
 type Event struct {
-	_airbyte_ab_id      string `json:"-"`
+	_airbyte_ab_id string `json:"-"`
+	// json tag with - does not parse a result
+	// items in struct not defined with a cap will not EXPORT or be available
 	_airbyte_emitted_at string `json:"-"`
 	_airbyte_data       struct {
+		//Need to change topic name for each workflow
 		Candidates_neocandidate struct {
 			User_id string `json:"Userid"`
+			//Need to change in env file best to setup go-env to handle at compile time
 		}
 	}
 	_airbyte_stream string `json:"-"`
