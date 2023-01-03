@@ -20,7 +20,7 @@ const (
 	id          = 1
 )
 
-type Event struct {
+type Event0 struct {
 	_airbyte_ab_id string `json:"-"`
 	// json tag with - does not parse a result
 	// items in struct not defined with a cap will not EXPORT or be available
@@ -75,7 +75,7 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		logger.Info("Consuming message")
 		//var Event interface{}
-		e := Event{}            // The interface where we will save the converted JSON data.
+		e := Event0{}           // The interface where we will save the converted JSON data.
 		b, _ := json.Marshal(m) // Need to marshal kafka.Message to make it consumable by unmarshal
 		json.Unmarshal([]byte(b), &e)
 		// UnMarshal byte array created above for conversion into mapped interface.
@@ -88,6 +88,6 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		//Need to do stuff here so I can pass userID to watson
 		logger.Info("Posting to Watson")
 		watson.WatsonPostCreateWallet(e._airbyte_data.Candidates_neocandidate.User_id)
-
+		return string(b), nil
 	}
 }
