@@ -9,7 +9,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-type Event2 struct {
+type Event1 struct {
 	_airbyte_ab_id string `json:"-"`
 	// json tag with - does not parse a result
 	// items in struct not defined with a cap will not EXPORT or be available
@@ -42,7 +42,7 @@ func CreateWalletParentWorkflow(ctx workflow.Context) (string, error) {
 	logger.Info("Parent execution completed.", "Result", result)
 	logger.Info("Writing message to next topic")
 	b, _ := json.Marshal(result)
-	e := Event2{}
+	e := Event1{}
 	json.Unmarshal([]byte(b), &e)
 
 	w := &kafka.Writer{

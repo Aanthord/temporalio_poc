@@ -90,4 +90,5 @@ func CreateWalletChildWorkflow(ctx workflow.Context, name string) (string, error
 		watson.WatsonPostCreateWallet(e._airbyte_data.Candidates_neocandidate.User_id)
 		return string(b), nil
 	}
+
 }
